@@ -1,0 +1,21 @@
+{
+    "name": "telegram-mirror",
+    "version": "1.0.0",
+    "description": "A telegram user bot that mirror messages to Discord webhooks",
+    "main": "./src/index.ts",
+    "scripts": {
+        "dev": "tsx watch ./src/index.ts",
+        "start": "node ./dist/index.js",
+        "build": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "tsx": "^4.19.1",
+        "typescript": "^5.6.3"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5"
+    }
+}
