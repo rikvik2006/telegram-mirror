@@ -1,3 +1,6 @@
+# Application files
+info/
+
 # Logs
 logs
 *.log
