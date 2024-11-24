@@ -1,5 +1,6 @@
 # Application files
 info/
+config/
 
 # Logs
 logs
