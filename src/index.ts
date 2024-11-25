@@ -3,6 +3,8 @@ import { StringSession } from "telegram/sessions";
 import { NewMessage, NewMessageEvent } from "telegram/events";
 import { input } from "@inquirer/prompts";
 import { config } from "dotenv";
+import { betterConsoleLog } from "telegram/Helpers";
+import { checkChatId } from "./functions/checkChatId";
 config();
 
 const apiId = parseInt(process.env.API_ID as string);
@@ -14,6 +16,7 @@ const startTelegramClient = async () => {
         connectionRetries: 5,
     });
 
+    // Client Login
     await client.start({
         phoneNumber: async () => await input({ message: "Phone Number" }),
         // password: async () => await input({ message: "Password" }),
@@ -21,16 +24,28 @@ const startTelegramClient = async () => {
         onError: (err) => console.log(err),
     });
     console.log("Connected");
-    await client.sendMessage("me", { message: "Ciao ⭐" });
 
     // Listener for new messages
     client.addEventHandler(async (update: NewMessageEvent) => {
         console.log(update);
         const message = update.message;
 
+        // Chat ID
+        const chatId = update.chatId?.toString();
+        console.log("🆔 Chat Id:", chatId);
+        if (!chatId) {
+            console.log("❌ Chat ID not found");
+            return;
+        }
+
+        const isChatIdFound = checkChatId(chatId);
+        if (!isChatIdFound) return;
+
         if (!message || !message.message) return;
-        console.log("🦵 Ciao");
+        console.log("---------- Nuovo Messaggio ----------");
         console.log("⭐", message.message);
+        const mediaBuffer = message.media?.getBytes();
+        // client.sendMessage();
     }, new NewMessage({}));
 
     await client.connect();
