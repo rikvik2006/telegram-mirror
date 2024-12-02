@@ -1,20 +1,16 @@
 import path from "path";
 import { openJsonFile } from "./openJsonFile";
 
-export const checkChatId = (chatId: string) => {
+export const getOutWebhokByChatId = (chatId: string): string | undefined => {
     const jsonData = openJsonFile(
         path.join(__dirname, "..", "..", "config", "channelsToWebhook.json")
     ) as { [key: string]: string };
 
     const objectKeys = Object.keys(jsonData);
 
-    let isResourceFound = false;
     for (const key of objectKeys) {
         if (key === chatId) {
-            isResourceFound = true;
-            break;
+            return jsonData[key];
         }
     }
-
-    return isResourceFound;
 };

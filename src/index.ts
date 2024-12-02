@@ -5,6 +5,9 @@ import { input } from "@inquirer/prompts";
 import { config } from "dotenv";
 import { betterConsoleLog } from "telegram/Helpers";
 import { checkChatId } from "./functions/checkChatId";
+import { logWithTimestamp } from "./utils/log";
+import { messageHandler } from "./services/mesageHandler";
+import { getOutWebhokByChatId } from "./functions/getOutWebhookByChatId";
 config();
 
 const apiId = parseInt(process.env.API_ID as string);
@@ -23,7 +26,7 @@ const startTelegramClient = async () => {
         phoneCode: async () => await input({ message: "Code" }),
         onError: (err) => console.log(err),
     });
-    console.log("Connected");
+    logWithTimestamp("🔗 Connected");
 
     // Listener for new messages
     client.addEventHandler(async (update: NewMessageEvent) => {
@@ -32,7 +35,7 @@ const startTelegramClient = async () => {
 
         // Chat ID
         const chatId = update.chatId?.toString();
-        console.log("🆔 Chat Id:", chatId);
+        logWithTimestamp("🆔 Chat Id:", chatId);
         if (!chatId) {
             console.log("❌ Chat ID not found");
             return;
@@ -41,11 +44,15 @@ const startTelegramClient = async () => {
         const isChatIdFound = checkChatId(chatId);
         if (!isChatIdFound) return;
 
+        // Out webhook from config/channelsToWebhook.json
+        const outWebhook = getOutWebhokByChatId(chatId);
+        if (!outWebhook) {
+            logWithTimestamp("❌ Out webhook not found but chatId is found");
+            throw new Error("Out webhook not found but chatId is found");
+        }
+
         if (!message || !message.message) return;
-        console.log("---------- Nuovo Messaggio ----------");
-        console.log("⭐", message.message);
-        const mediaBuffer = message.media?.getBytes();
-        // client.sendMessage();
+        await messageHandler(message, outWebhook);
     }, new NewMessage({}));
 
     await client.connect();
