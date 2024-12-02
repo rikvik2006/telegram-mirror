@@ -1,6 +1,7 @@
 # Application files
 info/
 config/
+temp/
 
 # Logs
 logs

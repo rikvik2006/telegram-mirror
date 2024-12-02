@@ -1,26 +1,50 @@
 import { Api } from "telegram";
 import { checkChatId } from "../functions/checkChatId";
+import { logWithTimestamp } from "../utils/log";
+import {
+    EmbedBuilder,
+    MessageActivityType,
+    WebhookClient,
+    Routes,
+} from "discord.js";
+import { sendEmbedToDiscord } from "../functions/sendEmbedToDiscord";
 
-const messageHandler = async (message: Api.Message) => {
-    let messagePeerId: string = "";
+export const messageHandler = async (
+    message: Api.Message,
+    outWebhook: string
+) => {
+    logWithTimestamp("---------- Nuovo Messaggio ----------");
+    logWithTimestamp("⭐", message.message);
 
-    if (message.peerId.className === "PeerChat") {
-        // Chat
-        messagePeerId = message.peerId.chatId.toString();
-    } else if (message.peerId.className === "PeerUser") {
-        // User
-        messagePeerId = message.peerId.userId.toString();
-    } else {
-        // Channel
-        messagePeerId = message.peerId.channelId.toString();
-    }
+    const messageContent: string = message.message;
+    // Get the image from the message if it exists
+    const messageImage = message.photo?.getBytes();
+    const messageDocument = message.document?.getBytes();
+    const messagePostAuthor = message.postAuthor;
 
-    const isResourceFound = checkChatId(messagePeerId);
-    if (!isResourceFound) {
-        console.log("Resource not found");
-        return;
-    }
+    console.log("📸", messageImage?.toString());
+
+    sendEmbedToDiscord(outWebhook, messageContent, messageImage);
 };
+
+// let messagePeerId: string = "";
+
+// if (message.peerId.className === "PeerChat") {
+//     // Chat
+//     messagePeerId = message.peerId.chatId.toString();
+// } else if (message.peerId.className === "PeerUser") {
+//     // User
+//     messagePeerId = message.peerId.userId.toString();
+// } else {
+//     // Channel
+//     messagePeerId = message.peerId.channelId.toString();
+// }
+
+// const isResourceFound = checkChatId(messagePeerId);
+// if (!isResourceFound) {
+//     console.log("Resource not found");
+//     return;
+// }
 
 // if (message.peerId.className === "PeerChat") {
 //     // Chat
