@@ -8,8 +8,10 @@ import {
     Routes,
 } from "discord.js";
 import { sendEmbedToDiscord } from "../functions/sendEmbedToDiscord";
+import { NewMessageEvent } from "telegram/events";
 
 export const messageHandler = async (
+    update: NewMessageEvent,
     message: Api.Message,
     outWebhook: string
 ) => {

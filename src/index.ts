@@ -1,6 +1,7 @@
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { NewMessage, NewMessageEvent } from "telegram/events";
+import { resolveId } from "telegram/Utils";
 import { input } from "@inquirer/prompts";
 import { config } from "dotenv";
 import { betterConsoleLog } from "telegram/Helpers";
@@ -33,6 +34,20 @@ const startTelegramClient = async () => {
         console.log(update);
         const message = update.message;
 
+        /*
+         * Telegram ID Explained
+         *
+         * Chats: Chats are what offcial applications refer as groups. Both the bot API and Telethon (actualy GramJS) will add a minus sign (negate) the real chat ID so that you can tell at a glance, with just a number, the entity type.
+         *
+         * See Telethon Documentation: https://docs.telethon.dev/en/stable/concepts/chats-vs-channels.html#chats
+         *
+         * Channels: Official applications create a broadcast channel when you create a new channel (used to broadcast messages, only administrators can post messages).
+         *
+         * Both the bot API and Telethon will “concatenate” -100 to the real chat ID so you can tell at a glance, with just a number, the entity type.
+         *
+         * See Telethon Documentation: https://docs.telethon.dev/en/stable/concepts/chats-vs-channels.html#channels
+         */
+
         // Chat ID
         const chatId = update.chatId?.toString();
         logWithTimestamp("🆔 Chat Id:", chatId);
@@ -40,6 +55,11 @@ const startTelegramClient = async () => {
             console.log("❌ Chat ID not found");
             return;
         }
+
+        const [realId, peerType] = resolveId(update.chatId!);
+
+        console.log("🆔 Real Id:", realId);
+        console.log("🆔 Peer Type:", peerType);
 
         const isChatIdFound = checkChatId(chatId);
         if (!isChatIdFound) return;
@@ -52,7 +72,7 @@ const startTelegramClient = async () => {
         }
 
         if (!message || !message.message) return;
-        await messageHandler(message, outWebhook);
+        await messageHandler(update, message, outWebhook);
     }, new NewMessage({}));
 
     await client.connect();
