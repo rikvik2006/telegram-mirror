@@ -2,6 +2,7 @@ import path from "path";
 import { AttachmentBuilder, EmbedBuilder, WebhookClient } from "discord.js";
 import { saveImageToFile } from "./temp";
 import { logWithTimestamp } from "../utils/log";
+import { openJsonFile } from "./openJsonFile";
 
 export const sendEmbedToDiscord = async (
     outWebhook: string,
@@ -33,6 +34,36 @@ export const sendEmbedToDiscord = async (
               }
             : {}),
     });
+
+    const jsonData = openJsonFile(
+        path.join(__dirname, "..", "..", "config", "embed.json")
+    ) as { [key: string]: object | string };
+
+    // Check if exists
+    if (!jsonData) {
+        logWithTimestamp("❌ Error reading embed.json");
+        throw new Error("Error reading embed.json");
+    }
+
+    const footerData = jsonData.footer as
+        | { text: string; iconURL: string }
+        | undefined;
+
+    if (!footerData) {
+        logWithTimestamp("❌ jsonData.footer is not defined");
+        throw new Error("jsonData.footer is not defined");
+    }
+
+    if (footerData.text !== "") {
+        embed.setFooter({ text: footerData.text });
+
+        if (footerData.iconURL !== "") {
+            embed.setFooter({
+                text: footerData.text,
+                iconURL: footerData.iconURL,
+            });
+        }
+    }
 
     try {
         await webhookClient.send({
