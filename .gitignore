@@ -3,6 +3,9 @@ info/
 config/
 temp/
 
+# Visual studio code
+.vscode/
+
 # Logs
 logs
 *.log
