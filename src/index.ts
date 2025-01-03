@@ -73,6 +73,9 @@ const startTelegramClient = async () => {
 
         if (!message || !message.message) return;
         await messageHandler(update, message, outWebhook);
+
+        // Get message by ID
+        // await client.getMessages(chatId, { ids: 1234 })
     }, new NewMessage({}));
 
     await client.connect();

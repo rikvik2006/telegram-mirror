@@ -1,36 +1,52 @@
 import path from "path";
-import { AttachmentBuilder, EmbedBuilder, WebhookClient } from "discord.js";
+import {
+    AttachmentBuilder,
+    EmbedAssertions,
+    EmbedBuilder,
+    WebhookClient,
+} from "discord.js";
 import { saveImageToFile } from "./temp";
 import { logWithTimestamp } from "../utils/log";
 import { openJsonFile } from "./openJsonFile";
 
+type EmbedData = {
+    messageContent: string;
+    messageImage?: Buffer | string | undefined;
+    author: string;
+};
+
 export const sendEmbedToDiscord = async (
     outWebhook: string,
-    messageContent: string,
-    messageImage?: Buffer
+    embedData: EmbedData
 ) => {
     const webhookClient = new WebhookClient({ url: outWebhook });
+    // let attachmentUrl: string | undefined;
+    // if (embedData.messageImage) {
+    //     const tempFileName = path.join(
+    //         __dirname,
+    //         "..",
+    //         "..",
+    //         "temp",
+    //         `temp-${Date.now()}.png`
+    //     );
+    //     await saveImageToFile(messageImage, tempFileName);
+    //     // attachment = new AttachmentBuilder(messageImage);
+    //     attachmentUrl = `attachment://${tempFileName.split("/").pop()}`;
+    // }
+
     let attachment: AttachmentBuilder | undefined;
-    let attachmentUrl: string | undefined;
-    if (messageImage) {
-        const tempFileName = path.join(
-            __dirname,
-            "..",
-            "..",
-            "temp",
-            `temp-${Date.now()}.png`
-        );
-        await saveImageToFile(messageImage, tempFileName);
-        // attachment = new AttachmentBuilder(messageImage);
-        attachmentUrl = `attachment://${tempFileName.split("/").pop()}`;
+    if (embedData.messageImage) {
+        attachment = new AttachmentBuilder(embedData.messageImage, {
+            name: "productImage.png",
+        });
     }
 
     const embed = new EmbedBuilder({
-        description: messageContent,
-        ...(attachmentUrl
+        description: embedData.messageContent,
+        ...(attachment
             ? {
-                  thumbnail: { url: attachmentUrl },
-                  image: { url: attachmentUrl },
+                  //   thumbnail: { url: `attachment://${attachment.name}` },
+                  image: { url: `attachment://${attachment.name}` },
               }
             : {}),
     });
@@ -68,7 +84,6 @@ export const sendEmbedToDiscord = async (
     try {
         await webhookClient.send({
             embeds: [embed],
-            // files: attachment ? [attachment] : [],
         });
         logWithTimestamp("🚀 Message sent to Discord");
     } catch (err) {
