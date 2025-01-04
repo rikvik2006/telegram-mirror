@@ -37,17 +37,6 @@ export const messageHandler = async (
                 entityImage = photoBuffer
                     ? Buffer.from(photoBuffer)
                     : undefined;
-
-                fs.writeFileSync(
-                    path.join(
-                        __dirname,
-                        "..",
-                        "..",
-                        "temp",
-                        "authorImageBuffer.png"
-                    ),
-                    entityImage!
-                );
             }
         }
     }

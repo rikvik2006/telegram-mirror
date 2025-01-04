@@ -35,6 +35,7 @@ const startTelegramClient = async () => {
         "scontierrati",
         "erroridiprezzo_offertedalweb",
         "ERRORI_DI_PREZZO_SPAZIALI",
+        "Offertedaffarionline",
     ]);
 
     // const chat = await client.getEntity("-1001074442138");
