@@ -12,7 +12,8 @@ import { openJsonFile } from "./openJsonFile";
 type EmbedData = {
     messageContent: string;
     messageImage?: Buffer | string | undefined;
-    author: string;
+    author: string | undefined;
+    autorImage: Buffer | undefined;
 };
 
 export const sendEmbedToDiscord = async (
@@ -34,19 +35,24 @@ export const sendEmbedToDiscord = async (
     //     attachmentUrl = `attachment://${tempFileName.split("/").pop()}`;
     // }
 
-    let attachment: AttachmentBuilder | undefined;
+    let productImageBufferAttachment: AttachmentBuilder | undefined;
     if (embedData.messageImage) {
-        attachment = new AttachmentBuilder(embedData.messageImage, {
-            name: "productImage.png",
-        });
+        productImageBufferAttachment = new AttachmentBuilder(
+            embedData.messageImage,
+            {
+                name: "productImage.png",
+            }
+        );
     }
 
     const embed = new EmbedBuilder({
         description: embedData.messageContent,
-        ...(attachment
+        ...(productImageBufferAttachment
             ? {
                   //   thumbnail: { url: `attachment://${attachment.name}` },
-                  image: { url: `attachment://${attachment.name}` },
+                  image: {
+                      url: `attachment://${productImageBufferAttachment.name}`,
+                  },
               }
             : {}),
     });
@@ -81,9 +87,36 @@ export const sendEmbedToDiscord = async (
         }
     }
 
+    let authorImageBufferAttachment: AttachmentBuilder | undefined;
+    if (embedData.author) {
+        embed.setAuthor({ name: embedData.author });
+
+        if (embedData.autorImage) {
+            authorImageBufferAttachment = new AttachmentBuilder(
+                embedData.autorImage,
+                {
+                    name: "authorImage.png",
+                }
+            );
+
+            embed.setAuthor({
+                name: embedData.author,
+                iconURL: `attachment://${authorImageBufferAttachment.name}`,
+            });
+        }
+    }
+
+    const attachment = [];
+    if (authorImageBufferAttachment) {
+        attachment.push(authorImageBufferAttachment);
+    }
+    if (productImageBufferAttachment) {
+        attachment.push(productImageBufferAttachment);
+    }
     try {
         await webhookClient.send({
             embeds: [embed],
+            files: attachment,
         });
         logWithTimestamp("🚀 Message sent to Discord");
     } catch (err) {

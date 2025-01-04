@@ -1,15 +1,9 @@
-import { Api, utils } from "telegram";
-import { checkChatId } from "../functions/checkChatId";
+import { Api } from "telegram";
 import { logWithTimestamp } from "../utils/log";
-import {
-    EmbedBuilder,
-    MessageActivityType,
-    WebhookClient,
-    Routes,
-} from "discord.js";
 import { sendEmbedToDiscord } from "../functions/sendEmbedToDiscord";
 import { NewMessageEvent } from "telegram/events";
-import { _updateLoop } from "telegram/client/updates";
+import fs from "fs";
+import path from "path";
 
 export const messageHandler = async (
     update: NewMessageEvent,
@@ -24,19 +18,40 @@ export const messageHandler = async (
         throw new Error("Client not found");
     }
 
-    // const entity = await update.getChat();
+    const entity = await update.client.getEntity(update.chatId!);
 
-    // if (!entity) {
-    //     logWithTimestamp(
-    //         "❌ Entity not found (the message is not in a chat or a channel)"
-    //     );
-    //     throw new Error(
-    //         "Entity not found (the message is not in a chat or a channel)"
-    //     );
-    // }
-
-    // const entityName = utils.getDisplayName(entity);
+    // Get Message Content
     const messageContent: string = message.message;
+
+    // Get entity name and image
+    let entityName: string | undefined;
+    let entityImage: Buffer | undefined;
+    if (
+        (entity && entity.className === "Chat") ||
+        entity.className === "Channel"
+    ) {
+        entityName = entity.title;
+        if (entity.photo) {
+            if (entity.photo.className === "ChatPhoto") {
+                const photoBuffer = entity.photo.strippedThumb?.buffer;
+                entityImage = photoBuffer
+                    ? Buffer.from(photoBuffer)
+                    : undefined;
+
+                fs.writeFileSync(
+                    path.join(
+                        __dirname,
+                        "..",
+                        "..",
+                        "temp",
+                        "authorImageBuffer.png"
+                    ),
+                    entityImage!
+                );
+            }
+        }
+    }
+
     // Get the image from the message if it exists
     let messageImage: string | Buffer | undefined = undefined;
     if (update.message.media) {
@@ -75,7 +90,8 @@ export const messageHandler = async (
     sendEmbedToDiscord(outWebhook, {
         messageContent,
         messageImage,
-        author: "test",
+        author: entityName,
+        autorImage: entityImage,
     });
 
     // const telegramMessageLinkRegEx = /https:\/\/t\.me(\/c)?\/([^\/]+)\/(\d+)/g;

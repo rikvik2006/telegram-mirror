@@ -37,6 +37,9 @@ const startTelegramClient = async () => {
         "ERRORI_DI_PREZZO_SPAZIALI",
     ]);
 
+    // const chat = await client.getEntity("-1001074442138");
+    // const fetchedMessge = await client.getMessages(chat, { ids: 1332 });
+
     // Listener for new messages
     client.addEventHandler(async (update: NewMessageEvent) => {
         console.log(update);
