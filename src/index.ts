@@ -9,6 +9,7 @@ import { checkChatId } from "./functions/checkChatId";
 import { logWithTimestamp } from "./utils/log";
 import { messageHandler } from "./services/mesageHandler";
 import { getOutWebhokByChatId } from "./functions/getOutWebhookByChatId";
+import { getGroupIds } from "./utils/getGroupIds";
 config();
 
 const apiId = parseInt(process.env.API_ID as string);
@@ -28,6 +29,13 @@ const startTelegramClient = async () => {
         onError: (err) => console.log(err),
     });
     logWithTimestamp("🔗 Connected");
+
+    getGroupIds(client, [
+        "iverierroridiprezzo",
+        "scontierrati",
+        "erroridiprezzo_offertedalweb",
+        "ERRORI_DI_PREZZO_SPAZIALI",
+    ]);
 
     // Listener for new messages
     client.addEventHandler(async (update: NewMessageEvent) => {
